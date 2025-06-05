@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('Gemini API Error:', errorData);
+                console.log('Full errorData from API:', JSON.stringify(errorData, null, 2)); // Log the full object
                 const errorMsg = `Gemini API 오류: ${response.status} ${response.statusText}. ${errorData?.error?.message || ''}`;
                 aiResponse.textContent = errorMsg;
                 speakText("API 호출 중 오류가 발생했습니다.");
