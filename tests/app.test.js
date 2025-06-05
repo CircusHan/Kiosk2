@@ -47,9 +47,9 @@ describe('Main Application Logic (app.js)', () => {
         // This is tricky. app.js is already loaded and its DOMContentLoaded listener attached.
         // We can't just re-run the script easily.
         // The tests will rely on the fact that app.js has already run and
-        // its global functions (like callGeminiAPI if it were global) or event listeners
+        // its global functions (like callChatGPTAPI if it were global) or event listeners
         // are set up using the mocked DOM elements.
-        // For functions like callGeminiAPI which are scoped, we need to test them via the events that trigger them.
+        // For functions like callChatGPTAPI which are scoped, we need to test them via the events that trigger them.
         console.log("Attempting to re-initialize app.js logic conceptually for test setup.");
     }
 
@@ -146,15 +146,15 @@ describe('Main Application Logic (app.js)', () => {
 
         // Manually trigger the part of app.js's DOMContentLoaded that checks API key
         // This is a simplification.
-        const initialApiKey = localStorage.getItem('geminiApiKey');
+        const initialApiKey = localStorage.getItem('openaiApiKey');
         if (!initialApiKey) {
-            mockAiResponse.textContent = 'Gemini API 키가 설정되지 않았습니다. 설정 페이지로 이동해주세요.';
+            mockAiResponse.textContent = 'OpenAI API 키가 설정되지 않았습니다. 설정 페이지로 이동해주세요.';
             if (window.SpeechRecognition || window.webkitSpeechRecognition) {
                 mockStartButton.disabled = true;
             }
         }
 
-        console.assert(mockAiResponse.textContent.includes('Gemini API 키가 설정되지 않았습니다'), "API key needed message not shown.");
+        console.assert(mockAiResponse.textContent.includes('OpenAI API 키가 설정되지 않았습니다'), "API key needed message not shown.");
         console.assert(mockStartButton.disabled === true, "Start button not disabled when API key is missing and speech is supported.");
     });
 
@@ -183,8 +183,8 @@ describe('Main Application Logic (app.js)', () => {
     });
 
 
-    it('should call Gemini API via fetch when speech is recognized and display response', (done) => {
-        localStorage.setItem('geminiApiKey', 'fake-key');
+    it('should call ChatGPT API via fetch when speech is recognized and display response', (done) => {
+        localStorage.setItem('openaiApiKey', 'fake-key');
         MockSpeechRecognitionGlobal.isSupported = true; // Ensure speech rec is enabled for this test
         window.SpeechRecognition = MockSpeechRecognitionGlobal;
         window.webkitSpeechRecognition = MockSpeechRecognitionGlobal;
@@ -205,12 +205,12 @@ describe('Main Application Logic (app.js)', () => {
             done.fail("onresult not set up"); // Jasmine syntax, adapt for console.assert
         }
 
-        // 3. callGeminiAPI should be called, which uses fetch
+        // 3. callChatGPTAPI should be called, which uses fetch
         // We need to wait for the fetch promise to resolve.
         setTimeout(() => {
             try {
                 console.assert(mockUserTranscript.textContent === mockTranscript, "Transcript not displayed.");
-                console.assert(mockAiResponse.textContent === "Mocked AI response", "Gemini response not displayed.");
+                console.assert(mockAiResponse.textContent === "Mocked AI response", "ChatGPT response not displayed.");
                 done(); // Signal async completion
             } catch (e) {
                 done.fail ? done.fail(e) : console.error(e); // Adapt for runner
@@ -218,8 +218,8 @@ describe('Main Application Logic (app.js)', () => {
         }, 100); // Small delay for async operations
     });
 
-    it('should handle Gemini API error (e.g., bad key) and display error message', (done) => {
-        localStorage.setItem('geminiApiKey', 'fake-key-bad');
+    it('should handle OpenAI API error (e.g., bad key) and display error message', (done) => {
+        localStorage.setItem('openaiApiKey', 'fake-key-bad');
         MockSpeechRecognitionGlobal.isSupported = true;
         window.SpeechRecognition = MockSpeechRecognitionGlobal;
         window.webkitSpeechRecognition = MockSpeechRecognitionGlobal;
@@ -239,7 +239,7 @@ describe('Main Application Logic (app.js)', () => {
 
         setTimeout(() => {
             try {
-                console.assert(mockAiResponse.textContent.includes("Gemini API 오류: 400 Bad Request"), "Gemini API error not handled as expected.");
+                console.assert(mockAiResponse.textContent.includes("OpenAI API 오류: 400 Bad Request"), "OpenAI API error not handled as expected.");
                 console.assert(mockAiResponse.textContent.includes("Invalid API key"), "Specific error message from API not included.");
                 done();
             } catch (e) {
@@ -248,20 +248,15 @@ describe('Main Application Logic (app.js)', () => {
         }, 100);
     });
 
-    it('should handle content blocked by Gemini API and display appropriate message', (done) => {
-        localStorage.setItem('geminiApiKey', 'fake-key-blocked');
+    it('should handle unexpected OpenAI API response gracefully', (done) => {
+        localStorage.setItem('openaiApiKey', 'fake-key-blocked');
         MockSpeechRecognitionGlobal.isSupported = true;
         window.SpeechRecognition = MockSpeechRecognitionGlobal;
         window.webkitSpeechRecognition = MockSpeechRecognitionGlobal;
 
         window.fetch = async (url, options) => ({
             ok: true,
-            json: async () => ({
-                promptFeedback: {
-                    blockReason: "SAFETY",
-                    safetyRatings: [{category: "HARM_CATEGORY_DANGEROUS_CONTENT", probability: "HIGH"}]
-                }
-            }),
+            json: async () => ({ choices: [] }),
             status: 200, statusText: "OK"
         });
 
@@ -274,8 +269,7 @@ describe('Main Application Logic (app.js)', () => {
 
         setTimeout(() => {
             try {
-                console.assert(mockAiResponse.textContent.includes("콘텐츠가 차단되었습니다. 이유: SAFETY"), "Content blocked message not shown correctly.");
-                console.assert(mockAiResponse.textContent.includes("HARM_CATEGORY_DANGEROUS_CONTENT: HIGH"), "Safety ratings not shown for blocked content.");
+                console.assert(mockAiResponse.textContent.includes("OpenAI API로부터 예상치 못한 응답 형식입니다."), "Unexpected response message not shown.");
                 done();
             } catch (e) {
                 done.fail ? done.fail(e) : console.error(e);
