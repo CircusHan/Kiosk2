@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro-latest:generateContent?key=${apiKey}`;
         aiResponse.textContent = 'AI가 생각 중입니다...';
 
         try {
