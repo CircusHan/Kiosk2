@@ -51,17 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Function to call Gemini API
-    async function callGeminiAPI(text) {
-        const apiKey = localStorage.getItem('geminiApiKey');
+    // Function to call ChatGPT API
+    async function callChatGPTAPI(text) {
+        const apiKey = localStorage.getItem('openaiApiKey');
         if (!apiKey) {
-            const msg = 'Gemini API 키가 설정되지 않았습니다. 설정에서 입력해주세요.';
+            const msg = 'OpenAI API 키가 설정되지 않았습니다. 설정에서 입력해주세요.';
             aiResponse.textContent = msg;
             // speakText(msg); // Optionally speak this message
             return;
         }
 
-        const API_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+        const API_URL = 'https://api.openai.com/v1/chat/completions';
         aiResponse.textContent = 'AI가 생각 중입니다...';
 
         try {
@@ -69,20 +69,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: text
-                        }]
-                    }]
-                }),
+                    model: 'gpt-4o',
+                    messages: [{ role: 'user', content: text }]
+                })
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Gemini API Error:', errorData);
-                const errorMsg = `Gemini API 오류: ${response.status} ${response.statusText}. ${errorData?.error?.message || ''}`;
+                console.error('OpenAI API Error:', errorData);
+                const errorMsg = `OpenAI API 오류: ${response.status} ${response.statusText}. ${errorData?.error?.message || ''}`;
                 aiResponse.textContent = errorMsg;
                 speakText("API 호출 중 오류가 발생했습니다.");
                 throw new Error(errorMsg);
@@ -90,28 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            if (data.candidates && data.candidates.length > 0 &&
-                data.candidates[0].content && data.candidates[0].content.parts &&
-                data.candidates[0].content.parts.length > 0) {
-                const geminiText = data.candidates[0].content.parts[0].text;
-                aiResponse.textContent = geminiText;
-                speakText(geminiText); // Speak the Gemini response
-            } else if (data.promptFeedback && data.promptFeedback.blockReason) {
-                const blockReason = data.promptFeedback.blockReason;
-                const safetyRatings = data.promptFeedback.safetyRatings.map(rating => `${rating.category}: ${rating.probability}`).join(', ');
-                const blockedMsg = `콘텐츠가 차단되었습니다. 이유: ${blockReason}.`;
-                aiResponse.textContent = `${blockedMsg} 안전 등급: ${safetyRatings}`;
-                console.warn('Content blocked by Gemini API:', data.promptFeedback);
-                speakText(blockedMsg);
+            if (data.choices && data.choices.length > 0) {
+                const chatgptText = data.choices[0].message.content.trim();
+                aiResponse.textContent = chatgptText;
+                speakText(chatgptText);
             } else {
-                const errMsg = 'Gemini API로부터 예상치 못한 응답 형식입니다.';
+                const errMsg = 'OpenAI API로부터 예상치 못한 응답 형식입니다.';
                 aiResponse.textContent = errMsg;
-                console.error('Unexpected Gemini API response structure:', data);
+                console.error('Unexpected OpenAI API response structure:', data);
                 speakText("API 응답을 처리할 수 없습니다.");
             }
 
         } catch (error) {
-            console.error('Gemini API 호출 중 오류 발생:', error);
+            console.error('OpenAI API 호출 중 오류 발생:', error);
             // Avoid speaking the full technical error message if it's too long or complex
             const userFriendlyError = `오류가 발생했습니다. API 키와 네트워크 연결을 확인해주세요.`;
             aiResponse.textContent = `${userFriendlyError} (${error.message})`;
@@ -137,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             userTranscript.textContent = transcript;
-            callGeminiAPI(transcript);
+            callChatGPTAPI(transcript);
         };
 
         recognition.onerror = (event) => {
@@ -169,9 +158,9 @@ document.addEventListener('DOMContentLoaded', () => {
         stopRecordButton.disabled = true;
     }
 
-    const initialApiKey = localStorage.getItem('geminiApiKey');
+    const initialApiKey = localStorage.getItem('openaiApiKey');
     if (!initialApiKey) {
-        const noApiKeyMsg = 'Gemini API 키가 설정되지 않았습니다. 설정 페이지로 이동해주세요.';
+        const noApiKeyMsg = 'OpenAI API 키가 설정되지 않았습니다. 설정 페이지로 이동해주세요.';
         aiResponse.textContent = noApiKeyMsg;
         // speakText(noApiKeyMsg); // Optionally speak this
         if (SpeechRecognition) {
@@ -184,9 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
             speechSynthesis.cancel(); // Stop any currently playing speech before starting new recognition
         }
         if (recognition) {
-            const currentApiKey = localStorage.getItem('geminiApiKey');
+            const currentApiKey = localStorage.getItem('openaiApiKey');
             if (!currentApiKey) {
-                const noApiKeyMsg = 'Gemini API 키가 설정되지 않았습니다. 설정 페이지로 이동해주세요.';
+                const noApiKeyMsg = 'OpenAI API 키가 설정되지 않았습니다. 설정 페이지로 이동해주세요.';
                 aiResponse.textContent = noApiKeyMsg;
                 userTranscript.textContent = '';
                 speakText(noApiKeyMsg);

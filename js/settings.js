@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const apiKeyInput = document.getElementById('geminiApiKey');
+    const apiKeyInput = document.getElementById('openaiApiKey');
     const saveButton = document.getElementById('saveApiKeyButton');
     const saveStatus = document.getElementById('saveStatus');
 
     // Load saved API key if it exists
-    const currentApiKey = localStorage.getItem('geminiApiKey');
+    const currentApiKey = localStorage.getItem('openaiApiKey');
     if (currentApiKey) {
         apiKeyInput.value = currentApiKey;
     }
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveButton.addEventListener('click', () => {
         const apiKey = apiKeyInput.value.trim();
         if (apiKey) {
-            localStorage.setItem('geminiApiKey', apiKey);
+            localStorage.setItem('openaiApiKey', apiKey);
             saveStatus.textContent = 'API Key saved successfully!';
             saveStatus.style.color = 'green';
         } else {

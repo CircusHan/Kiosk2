@@ -1,7 +1,7 @@
 // tests/settings.test.js
 describe('Settings Page Logic (settings.js)', () => {
     const apiKeyInput = document.createElement('input');
-    apiKeyInput.id = 'geminiApiKey';
+    apiKeyInput.id = 'openaiApiKey';
     const saveButton = document.createElement('button');
     saveButton.id = 'saveApiKeyButton';
     const saveStatus = document.createElement('p');
@@ -40,7 +40,7 @@ describe('Settings Page Logic (settings.js)', () => {
     beforeAll(() => {
         originalGetElementById = document.getElementById;
         document.getElementById = (id) => {
-            if (id === 'geminiApiKey') return apiKeyInput;
+            if (id === 'openaiApiKey') return apiKeyInput;
             if (id === 'saveApiKeyButton') return saveButton;
             if (id === 'saveStatus') return saveStatus;
             return originalGetElementById.call(document, id); // Fallback to original for other IDs
@@ -77,24 +77,24 @@ describe('Settings Page Logic (settings.js)', () => {
         // Simulate the core logic of the save button's event listener:
         const apiKey = apiKeyInput.value.trim();
         if (apiKey) {
-            localStorage.setItem('geminiApiKey', apiKey);
+            localStorage.setItem('openaiApiKey', apiKey);
             saveStatus.textContent = 'API Key saved successfully!'; // Match message from settings.js
         } else {
-            localStorage.removeItem('geminiApiKey'); // Ensure it's not set if empty
+            localStorage.removeItem('openaiApiKey'); // Ensure it's not set if empty
             saveStatus.textContent = 'Please enter an API Key.'; // Match message
         }
 
-        console.assert(localStorage.getItem('geminiApiKey') === 'test-api-key', 'API key not saved to localStorage.');
+        console.assert(localStorage.getItem('openaiApiKey') === 'test-api-key', 'API key not saved to localStorage.');
         console.assert(saveStatus.textContent === 'API Key saved successfully!', 'Success status message not shown.');
     });
 
     it('should load API key from localStorage into input field on script load (conceptual)', () => {
-        localStorage.setItem('geminiApiKey', 'loaded-key-123');
+        localStorage.setItem('openaiApiKey', 'loaded-key-123');
 
         // To properly test this, settings.js would need to be re-run or its init function called.
         // Manually simulate the effect of the DOMContentLoaded listener in settings.js
         // that populates the input field.
-        const currentApiKey = localStorage.getItem('geminiApiKey');
+        const currentApiKey = localStorage.getItem('openaiApiKey');
         if (currentApiKey) {
             apiKeyInput.value = currentApiKey;
         }
@@ -108,14 +108,14 @@ describe('Settings Page Logic (settings.js)', () => {
         // Simulate the core logic of the save button's event listener for empty input
         const apiKey = apiKeyInput.value.trim();
         if (apiKey) {
-            localStorage.setItem('geminiApiKey', apiKey);
+            localStorage.setItem('openaiApiKey', apiKey);
             saveStatus.textContent = 'API Key saved successfully!';
         } else {
-            localStorage.removeItem('geminiApiKey');
+            localStorage.removeItem('openaiApiKey');
             saveStatus.textContent = 'Please enter an API Key.';
         }
 
-        console.assert(localStorage.getItem('geminiApiKey') === null, 'API key should not be saved when input is empty.');
+        console.assert(localStorage.getItem('openaiApiKey') === null, 'API key should not be saved when input is empty.');
         console.assert(saveStatus.textContent === 'Please enter an API Key.', 'Empty input status message not shown.');
         // console.assert(saveStatus.style.color === 'red', 'Status message color not set to red for error.'); // style is harder to assert here
     });

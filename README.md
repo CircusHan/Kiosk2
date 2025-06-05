@@ -1,13 +1,13 @@
 # AI 음성 비서 웹 애플리케이션 (AI Voice Assistant Web Application)
 
-이 프로젝트는 사용자의 음성을 인식하고 Gemini API를 통해 응답을 생성하여 음성으로 출력하는 웹 애플리케이션입니다. 사용자는 설정 페이지에서 자신의 Gemini API 키를 입력하고 저장할 수 있습니다.
+이 프로젝트는 사용자의 음성을 인식하고 OpenAI의 ChatGPT API(gpt-4o 모델)를 통해 응답을 생성하여 음성으로 출력하는 웹 애플리케이션입니다. 사용자는 설정 페이지에서 자신의 OpenAI API 키를 입력하고 저장할 수 있습니다.
 
 ## 주요 기능
 
 *   **음성 인식**: 사용자의 음성을 텍스트로 변환합니다 (한국어 지원).
-*   **Gemini API 연동**: 변환된 텍스트를 Gemini API (gemini-pro 모델)로 전송하여 지능적인 응답을 생성합니다.
-*   **텍스트 음성 변환 (TTS)**: Gemini API로부터 받은 응답을 음성으로 사용자에게 전달합니다 (한국어 음성 지원).
-*   **API 키 설정**: 사용자가 자신의 Gemini API 키를 안전하게 저장하고 관리할 수 있는 설정 페이지를 제공합니다 (`localStorage` 사용).
+*   **ChatGPT API 연동**: 변환된 텍스트를 OpenAI의 ChatGPT API(gpt-4o 모델)로 전송하여 지능적인 응답을 생성합니다.
+*   **텍스트 음성 변환 (TTS)**: ChatGPT로부터 받은 응답을 음성으로 사용자에게 전달합니다 (한국어 음성 지원).
+*   **API 키 설정**: 사용자가 자신의 OpenAI API 키를 안전하게 저장하고 관리할 수 있는 설정 페이지를 제공합니다 (`localStorage` 사용).
 *   **사용자 인터페이스**: 깔끔하고 반응형인 UI를 제공합니다.
 *   **오류 처리**: API 오류, 음성 인식 오류 등 다양한 상황에 대한 알림을 제공합니다.
 
@@ -17,15 +17,14 @@
 *   CSS3
 *   JavaScript (ES6+)
 *   Web Speech API (SpeechRecognition for STT, SpeechSynthesis for TTS)
-*   Google Gemini API
+*   OpenAI ChatGPT API (gpt-4o)
 
 ## 사전 준비 사항
 
 1.  **웹 브라우저**: 최신 버전의 Chrome, Edge, Safari 등 Web Speech API를 지원하는 브라우저.
     *   음성 인식 및 합성은 브라우저 및 운영체제에 따라 지원 여부와 품질이 다를 수 있습니다.
-2.  **Gemini API 키**: Google AI Studio에서 Gemini API 키를 발급받아야 합니다.
-    *   [Google AI Studio](https://aistudio.google.com/app/apikey) 방문하여 API 키를 생성하세요.
-    *   API 사용에는 Google Cloud Project가 필요할 수 있으며, 관련 정책 및 요금제를 확인하세요.
+2.  **OpenAI API 키**: [OpenAI](https://platform.openai.com/)에서 API 키를 발급받아야 합니다.
+    *   API 사용에는 요금제가 적용되므로, 사용 전에 정책을 확인하세요.
 
 ## 설치 및 실행 방법
 
@@ -46,17 +45,17 @@
         ```
         이후 브라우저에서 `http://localhost:8000` (또는 지정된 포트)으로 접속합니다.
 
-3.  **Gemini API 키 설정**:
+3.  **OpenAI API 키 설정**:
     *   애플리케이션을 처음 실행하면 AI 응답 영역에 API 키가 설정되지 않았다는 메시지가 표시됩니다.
     *   상단의 "설정" (Settings) 링크를 클릭하여 설정 페이지로 이동합니다.
-    *   발급받은 Gemini API 키를 입력 필드에 붙여넣고 "API 키 저장" 버튼을 클릭합니다.
+    *   발급받은 OpenAI API 키를 입력 필드에 붙여넣고 "API 키 저장" 버튼을 클릭합니다.
     *   성공적으로 저장되면 메시지가 표시되고, 이제 음성 비서 기능을 사용할 수 있습니다. API 키는 브라우저의 `localStorage`에 저장됩니다.
 
 4.  **음성 비서 사용**:
     *   메인 페이지에서 "녹음 시작" 버튼을 클릭합니다.
     *   브라우저에서 마이크 접근 권한을 요청하면 허용합니다.
     *   말을 하면 음성이 텍스트로 변환되어 "사용자 음성" 영역에 표시됩니다.
-    *   인식이 완료되면 해당 텍스트가 Gemini API로 전송되고, AI의 응답이 "AI 응답" 영역에 표시되며 음성으로도 출력됩니다.
+    *   인식이 완료되면 해당 텍스트가 ChatGPT API로 전송되고, AI의 응답이 "AI 응답" 영역에 표시되며 음성으로도 출력됩니다.
     *   "녹음 중지" 버튼으로 수동으로 녹음을 중단할 수 있습니다.
 
 ## 테스트
