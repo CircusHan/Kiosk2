@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 음성 비서</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI 음성 비서</h1>
+        <nav>
+            <a href="settings.html">설정</a>
+        </nav>
+        <main>
+            <button id="startRecordButton">녹음 시작</button>
+            <button id="stopRecordButton" disabled>녹음 중지</button>
+            <div>
+                <h2>사용자 음성:</h2>
+                <p id="userTranscript"></p>
+            </div>
+            <div>
+                <h2>AI 응답:</h2>
+                <p id="aiResponse"></p>
+            </div>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+</html>
