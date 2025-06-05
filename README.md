@@ -5,7 +5,7 @@
 ## 주요 기능
 
 *   **음성 인식**: 사용자의 음성을 텍스트로 변환합니다 (한국어 지원).
-*   **Gemini API 연동**: 변환된 텍스트를 Gemini API (gemini-pro 모델)로 전송하여 지능적인 응답을 생성합니다.
+*   **Gemini API 연동**: 변환된 텍스트를 Gemini API (gemini-1.5-flash-latest 모델)로 전송하여 지능적인 응답을 생성합니다.
 *   **텍스트 음성 변환 (TTS)**: Gemini API로부터 받은 응답을 음성으로 사용자에게 전달합니다 (한국어 음성 지원).
 *   **API 키 설정**: 사용자가 자신의 Gemini API 키를 안전하게 저장하고 관리할 수 있는 설정 페이지를 제공합니다 (`localStorage` 사용).
 *   **사용자 인터페이스**: 깔끔하고 반응형인 UI를 제공합니다.
@@ -17,7 +17,7 @@
 *   CSS3
 *   JavaScript (ES6+)
 *   Web Speech API (SpeechRecognition for STT, SpeechSynthesis for TTS)
-*   Google Gemini API
+*   Google Gemini API (`gemini-1.5-flash-latest` 모델 사용)
 
 ## 사전 준비 사항
 
