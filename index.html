@@ -524,19 +524,23 @@
             resetTimerFunc(); // Reset inactivity timer on screen change
         }
 
-        if(receptionButton) receptionButton.addEventListener('click', () => { 
-            showScreen('receptionScreen'); 
+        // "접수" 버튼을 누르면 접수 화면으로 이동
+        if(receptionButton) receptionButton.addEventListener('click', () => {
+            showScreen('receptionScreen');
             speak("접수 화면입니다.");
         });
-        if(paymentButton) paymentButton.addEventListener('click', () => { 
+        // "수납" 버튼을 누르면 수납 화면으로 이동
+        if(paymentButton) paymentButton.addEventListener('click', () => {
             showScreen('paymentScreen');
             speak("수납 화면입니다.");
         });
-        if(certificateButton) certificateButton.addEventListener('click', () => { 
+        // "증명서 발급" 버튼을 누르면 해당 화면으로 이동
+        if(certificateButton) certificateButton.addEventListener('click', () => {
             showScreen('certificateScreen');
             speak("증명서 발급 화면입니다.");
         });
 
+        // 각 화면의 "홈으로" 버튼 - 홈 화면으로 복귀
         document.querySelectorAll('.back-to-home-button').forEach(button => {
             button.addEventListener('click', () => {
                 showScreen('homeScreen');
@@ -587,12 +591,15 @@
             speak(sizeText);
         }
 
+        // "글자 크게" 버튼 - 글자 크기를 한 단계 늘립니다
         if(fontSizeIncreaseButton) fontSizeIncreaseButton.addEventListener('click', () => {
             if (currentFontSize < 3) { currentFontSize++; updateAllTextSizes(); speakCurrentFontSize(); }
         });
+        // "글자 작게" 버튼 - 글자 크기를 한 단계 줄입니다
         if(fontSizeDecreaseButton) fontSizeDecreaseButton.addEventListener('click', () => {
             if (currentFontSize > 0) { currentFontSize--; updateAllTextSizes(); speakCurrentFontSize(); }
         });
+        // 음성 안내 버튼 - TTS 기능을 켜고 끕니다
         if(ttsButton) ttsButton.addEventListener('click', () => {
             ttsEnabled = !ttsEnabled;
             updateTtsButtonUI();
@@ -601,10 +608,15 @@
         });
         
         let currentLanguage = 'ko';
+        // 언어 변경 버튼 - 현재는 알림창만 표시합니다
         if(languageButton) languageButton.addEventListener('click', () => { alert('언어 변경 기능 구현 필요'); });
+        // 시설 안내 버튼 - 지도 모달을 보여 줍니다
         if(mapButton) mapButton.addEventListener('click', () => { mapModal.style.display = "block"; speak("주변 의료 시설 안내입니다. 화면을 확인해주세요."); });
+        // 지도 모달 닫기 버튼
         if(closeMapModal) closeMapModal.addEventListener('click', () => { mapModal.style.display = "none"; });
+        // 긴급 도움 요청 버튼 - 도움 모달을 표시합니다
         if(emergencyHelpButtonFixed) emergencyHelpButtonFixed.addEventListener('click', () => { emergencyHelpModal.style.display = "block"; speak("긴급 도움 요청 화면입니다. 도움이 필요하시면 직원 호출 버튼을 눌러주세요."); });
+        // 긴급 도움 모달 닫기 버튼
         if(closeEmergencyHelpModal) closeEmergencyHelpModal.addEventListener('click', () => { emergencyHelpModal.style.display = "none"; });
         
         window.onclick = function(event) {
@@ -820,8 +832,11 @@
             resetTimerFunc(); 
         }
 
+        // AI 챗봇 아이콘 클릭 시 챗봇 창 열기
         if(aiChatbotInvokeButton) aiChatbotInvokeButton.addEventListener('click', openAiChatbot);
+        // 챗봇 창의 닫기 버튼
         if(aiChatbotCloseButton) aiChatbotCloseButton.addEventListener('click', closeAiChatbot);
+        // 챗봇의 마이크 버튼 - 음성 인식 시작/중지
         if(aiChatbotMicButton) aiChatbotMicButton.addEventListener('click', () => {
             if(ttsEnabled) {
                 ttsEnabled = false;
