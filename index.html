@@ -751,6 +751,7 @@
                     const context = chatbotCaptureCanvas.getContext('2d');
                     context.drawImage(aiChatbotWebcamElement, 0, 0, chatbotCaptureCanvas.width, chatbotCaptureCanvas.height);
                     try {
+                        // Get base64 string *without* data URI prefix for backend
                         base64ImageData = chatbotCaptureCanvas.toDataURL('image/jpeg', 0.8).split(',')[1]; 
                     } catch (e) {
                         console.error("Error capturing frame for chatbot:", e);
@@ -761,41 +762,20 @@
                 }
             }
 
-            const apiKey = ""; 
-            // Modified prompt to guide Gemini for general and specific questions
-            const C_promptForGemini = `You are a helpful AI assistant integrated into a health kiosk. 
-An image of the kiosk screen the user is currently viewing may be provided. The user's question is: "${question}".
-
-Instructions:
-1. If the question seems directly related to the provided image of the kiosk screen (e.g., asking about a button, text, or information on the screen), answer based on the image.
-2. If the question is a general knowledge question (e.g., "What is the capital of France?", "How does photosynthesis work?", "Tell me a joke"), answer it as a general AI assistant.
-3. If the question asks for real-time, unanswerable information (e.g., "What is the current weather?", "What are today's news headlines?"), or information beyond your capabilities (like performing actions outside the chat), politely state that you cannot provide that specific type of information and suggest where the user might find it if appropriate.
-4. If no image is provided, or if the image is not relevant to the question, focus on answering as a general AI assistant based on the text of the question.
-
-Please provide a comprehensive and helpful answer in Korean.`;
-            
-            console.log("Prompt to Gemini:", C_promptForGemini); // For debugging
-
-            const parts = [{ text: C_promptForGemini }];
-            if (base64ImageData) {
-                parts.push({
-                    inlineData: {
-                        mimeType: "image/jpeg",
-                        data: base64ImageData
-                    }
-                });
-            }
+            // const apiKey = ""; // REMOVED - API key is now handled by the backend
 
             const payload = {
-                contents: [{ role: "user", parts: parts }],
-                // generationConfig: { // Optional: to specify output language if needed, but model should infer from prompt.
-                //    "response_mime_type": "text/plain"
-                // }
+                question: question
             };
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            if (base64ImageData) {
+                payload.image_data = base64ImageData;
+            }
+
+            // URL of your Python backend
+            const backendApiUrl = 'http://localhost:5001/api/chatbot';
 
             try {
-                const response = await fetch(apiUrl, {
+                const response = await fetch(backendApiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -803,22 +783,18 @@ Please provide a comprehensive and helpful answer in Korean.`;
                 const result = await response.json();
 
                 if (!response.ok) {
-                    console.error('Gemini API Error:', result);
-                    const errorMsg = result?.error?.message || `AI 응답 오류 (코드: ${response.status})`;
+                    console.error('Backend API Error:', result);
+                    const errorMsg = result?.error || `AI 응답 오류 (코드: ${response.status})`;
                     addMessageToChatbot(errorMsg, 'bot');
-                } else if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
-                    const aiResponse = result.candidates[0].content.parts[0].text;
-                    addMessageToChatbot(aiResponse, 'bot');
-                } else if (result.promptFeedback && result.promptFeedback.blockReason) {
-                    addMessageToChatbot(`요청이 안전상의 이유로 차단되었습니다: ${result.promptFeedback.blockReason}`, 'bot');
-                }
-                else {
-                    console.warn("Unexpected API response structure from Gemini:", result);
-                    addMessageToChatbot('AI로부터 예상치 못한 응답을 받았습니다. 응답 형식을 확인해주세요.', 'bot');
+                } else if (result.response) { // Assuming backend sends { "response": "AI message" }
+                    addMessageToChatbot(result.response, 'bot');
+                } else {
+                    console.warn("Unexpected API response structure from backend:", result);
+                    addMessageToChatbot('백엔드로부터 예상치 못한 응답을 받았습니다.', 'bot');
                 }
             } catch (error) {
-                console.error('Fetch error to Gemini:', error);
-                addMessageToChatbot(`AI 서비스 연결 중 오류 발생: ${error.message}`, 'bot');
+                console.error('Fetch error to backend:', error);
+                addMessageToChatbot(`AI 서비스 연결 중 오류 발생: ${error.message}. 백엔드 서버가 실행 중인지 확인하세요.`, 'bot');
             } finally {
                 aiChatbotStatus.textContent = '마이크 버튼을 누르고 말씀해주세요.';
                 if(aiChatbotMicButton) aiChatbotMicButton.disabled = false; 
