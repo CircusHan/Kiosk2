@@ -761,6 +761,7 @@
                 }
             }
 
+            const apiKey = ""; 
             // Modified prompt to guide Gemini for general and specific questions
             const C_promptForGemini = `You are a helpful AI assistant integrated into a health kiosk. 
 An image of the kiosk screen the user is currently viewing may be provided. The user's question is: "${question}".
@@ -785,11 +786,13 @@ Please provide a comprehensive and helpful answer in Korean.`;
                 });
             }
 
-            const payload = { question: C_promptForGemini };
-            if (base64ImageData) {
-                payload.image = base64ImageData;
-            }
-            const apiUrl = `/api/ask`;
+            const payload = {
+                contents: [{ role: "user", parts: parts }],
+                // generationConfig: { // Optional: to specify output language if needed, but model should infer from prompt.
+                //    "response_mime_type": "text/plain"
+                // }
+            };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
             try {
                 const response = await fetch(apiUrl, {
