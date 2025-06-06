@@ -29,6 +29,18 @@ H2(`키오스크 화면의 주요 기능')
 * **긴급 도움 요청 버튼**: 우측 하단의 고정 버튼을 누르면 직원 호출 화면이 나타납니다.
 * **주변 의료 시설 지도**: 지도 버튼을 누르면 위치 정보를 예시로 보여 주는 모달 창이 뜹니다.
 
+H2(`버튼을 눌렀을 때 동작하는 함수들')
+각 버튼과 연결된 주요 자바스크립트 함수는 다음과 같습니다.
+* **접수 버튼** → `showScreen('receptionScreen')`, `speak('접수 화면입니다.')`
+* **수납 버튼** → `showScreen('paymentScreen')`, `speak('수납 화면입니다.')`
+* **증명서 발급 버튼** → `showScreen('certificateScreen')`, `speak('증명서 발급 화면입니다.')`
+* **홈으로 버튼** → `showScreen('homeScreen')`, `speak('홈 화면으로 돌아왔습니다.')`
+* **글자 크게/작게 버튼** → `updateAllTextSizes()` 호출 후 현재 크기를 음성으로 안내
+* **음성안내 버튼** → `ttsEnabled` 값을 토글하고 `updateTtsButtonUI()` 실행
+* **시설안내 버튼** → `mapModal.style.display = 'block'` 으로 모달 표시
+* **긴급 도움 요청 버튼** → `emergencyHelpModal.style.display = 'block'`
+* **AI 챗봇 아이콘** → `openAiChatbot()` 으로 챗봇 창을 엽니다
+
 H2(`실행 방법 자세히 보기')
 1. Python이 설치되어 있지 않다면 [python.org](https://www.python.org)에서 설치합니다.
 2. 터미널에서 프로젝트 폴더로 이동한 뒤 다음 명령으로 필요한 패키지를 설치합니다.
