@@ -3,28 +3,858 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 음성 비서</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>배리어-프리 보건소 키오스크 - 홈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            height: 100%;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            overscroll-behavior: none;
+            margin: 0; 
+            height: 100%;
+            overflow: hidden; /* Prevent body scroll, only .content-area should scroll */
+        }
+        .kiosk-container {
+            width: 100vw;
+            height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f4f8;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            flex-shrink: 0; 
+        }
+        .content-area { 
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            padding: 40px; 
+            gap: 30px;
+            width: 100%;
+            overflow-y: auto; 
+            box-sizing: border-box; 
+            min-height: 0; /* <<< ADDED THIS LINE to help with flex item scrolling */
+        }
+        .main-button {
+            background-color: #ffffff;
+            color: #333333;
+            border: 2px solid #007bff;
+            border-radius: 20px;
+            padding: 40px;
+            font-size: 2.8rem;
+            font-weight: bold;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0; 
+        }
+        .main-button:hover {
+            background-color: #e9ecef;
+            transform: translateY(-5px);
+        }
+        .main-button-icon {
+            font-size: 5rem;
+            margin-bottom: 10px;
+        }
+        .screen-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .screen-content-placeholder { /* Added for testing scroll on other screens */
+            min-height: 300px; /* Ensures there's enough content to scroll */
+            width: 80%;
+            max-width: 500px;
+            background-color: #f9f9f9;
+            border: 1px dashed #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            color: #777;
+            font-size: 1.2rem;
+        }
+        .back-to-home-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 20px 40px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+        }
+        .back-to-home-button:hover {
+            background-color: #5a6268;
+        }
+
+        .accessibility-toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #343a40;
+            color: white;
+            padding: 15px 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-top: 3px solid #0056b3;
+            z-index: 1001; 
+            flex-shrink: 0; 
+        }
+        .access-button {
+            background-color: #495057;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+        .access-button:hover {
+            background-color: #6c757d;
+        }
+        .access-button svg {
+            width: 30px;
+            height: 30px;
+            fill: currentColor;
+        }
+        .emergency-button {
+            position: fixed;
+            top: 100px; 
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            padding: 25px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1000;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .emergency-button svg {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+        .ai-chatbot-invoke-button { 
+            position: fixed;
+            bottom: 120px; 
+            right: 20px;
+            background-color: #28a745;
+            color: white;
+            padding: 20px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .ai-chatbot-invoke-button svg {
+             width: 40px;
+             height: 40px;
+        }
+
+        .ai-chatbot-modal {
+            display: none; 
+            position: fixed;
+            z-index: 2000; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .ai-chatbot-modal-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 800px;
+            height: 85%;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .ai-chatbot-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .ai-chatbot-modal-header h2 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .ai-chatbot-close-button {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .ai-chatbot-close-button:hover {
+            color: #333;
+        }
+        .ai-chatbot-video-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 16/9; 
+            position: relative;
+        }
+        .ai-chatbot-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            display: block;
+        }
+        .ai-chatbot-chatbox {
+            flex-grow: 1;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            min-height: 150px; 
+        }
+        .ai-chatbot-message {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .ai-user-message {
+            background-color: #d1e7fd; 
+            margin-left: auto;
+            text-align: right;
+        }
+        .ai-bot-message {
+            background-color: #e9ecef; 
+            margin-right: auto;
+            text-align: left;
+        }
+        .ai-chatbot-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .ai-chatbot-input-area input[type="text"]{
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        .ai-chatbot-control-button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .ai-chatbot-control-button:hover {
+            background-color: #0056b3;
+        }
+        .ai-chatbot-control-button.listening {
+            background-color: #dc3545; 
+        }
+        .ai-chatbot-status {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            min-height: 20px;
+        }
+        #chatbotCaptureCanvas {
+            display: none;
+        }
+
+        .hidden-screen {
+            display: none !important; /* Ensure screen is hidden */
+        }
+
+
+        @media (max-width: 768px) {
+            .header { font-size: 2rem; padding: 15px; }
+            .content-area { padding: 20px;}
+            .main-button { font-size: 2rem; padding: 30px; }
+            .main-button-icon { font-size: 4rem; }
+            .screen-title { font-size: 2rem; }
+            .back-to-home-button { font-size: 1.5rem; padding: 15px 30px; }
+            .access-button { font-size: 1.2rem; padding: 12px 15px; }
+            .access-button svg { width: 24px; height: 24px; }
+            .emergency-button {
+                font-size: 1.3rem; padding: 15px; width: 100px; height: 100px; top: 90px;
+            }
+            .emergency-button svg { width: 30px; height: 30px; }
+            .ai-chatbot-invoke-button {
+                 width: 80px; height: 80px; bottom: 100px;
+            }
+            .ai-chatbot-invoke-button svg { width: 30px; height: 30px; }
+            .accessibility-toolbar { padding: 10px 5px; gap: 5px; }
+            .ai-chatbot-modal-content { width: 95%; height: 90%; padding: 15px;}
+            .ai-chatbot-modal-header h2 { font-size: 1.5rem; }
+            .ai-chatbot-control-button, .ai-chatbot-input-area input[type="text"] { font-size: 1rem; padding: 10px;}
+        }
+
+        .modal { 
+            display: none; position: fixed; z-index: 1500; 
+            left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
+            background-color: rgba(0,0,0,0.6); padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe; margin: 5% auto; padding: 30px; border: 1px solid #888;
+            width: 80%; max-width: 700px; border-radius: 15px; text-align: center;
+        }
+        .modal-content h2 { font-size: 2rem; margin-bottom: 20px; color: #007bff; }
+        .modal-content p { font-size: 1.2rem; margin-bottom: 20px; }
+        .close-button { color: #aaa; float: right; font-size: 38px; font-weight: bold; }
+        .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>AI 음성 비서</h1>
-        <nav>
-            <a href="settings.html">설정</a>
-        </nav>
-        <main>
-            <button id="startRecordButton">녹음 시작</button>
-            <button id="stopRecordButton" disabled>녹음 중지</button>
-            <div>
-                <h2>사용자 음성:</h2>
-                <p id="userTranscript"></p>
+    <div class="kiosk-container" id="kioskContainer">
+        <header class="header"> 배리어-프리 보건소 키오스크 </header>
+
+        <!-- Home Screen Content -->
+        <div id="homeScreen" class="content-area">
+            <button id="receptionButton" class="main-button"> <span class="main-button-icon">📝</span> 접수 (순번표) </button>
+            <button id="paymentButton" class="main-button"> <span class="main-button-icon">💳</span> 수납 </button>
+            <button id="certificateButton" class="main-button"> <span class="main-button-icon">📄</span> 증명서 발급 </button>
+        </div>
+
+        <!-- Reception Screen Content (Initially Hidden) -->
+        <div id="receptionScreen" class="content-area hidden-screen">
+            <h2 class="screen-title">접수 (순번표)</h2>
+            <p style="font-size: 1.5rem; text-align: center;">개인정보를 입력하거나 신분증/카드를 인식시켜주세요.<br>예약 여부를 확인 후 진료과를 안내해 드립니다.</p>
+            <div class="screen-content-placeholder">
+                <p><strong>[접수 기능 구현 영역]</strong><br>- 수기 키패드 입력<br>- 신분증/카드 리더기 연동<br>- 예약 조회<br>- 증상 선택</p>
             </div>
-            <div>
-                <h2>AI 응답:</h2>
-                <p id="aiResponse"></p>
+            <button class="back-to-home-button" data-target="homeScreen">홈으로</button>
+        </div>
+
+        <!-- Payment Screen Content (Initially Hidden) -->
+        <div id="paymentScreen" class="content-area hidden-screen">
+            <h2 class="screen-title">수납</h2>
+            <p style="font-size: 1.5rem; text-align: center;">개인정보를 입력 후 결제를 진행해주세요.<br>결제 완료 후 처방약 목록과 복약 방법을 안내해 드립니다.</p>
+             <div class="screen-content-placeholder">
+                <p><strong>[수납 기능 구현 영역]</strong><br>- 개인정보 입력<br>- 결제 (현금/카드/QR)<br>- 처방약 목록 인쇄</p>
             </div>
-        </main>
+            <button class="back-to-home-button" data-target="homeScreen">홈으로</button>
+        </div>
+
+        <!-- Certificate Screen Content (Initially Hidden) -->
+        <div id="certificateScreen" class="content-area hidden-screen">
+            <h2 class="screen-title">증명서 발급</h2>
+            <p style="font-size: 1.5rem; text-align: center;">발급받을 서류 종류를 선택하고 본인 인증 후 결제해주세요.<br>서류와 영수증이 함께 출력됩니다.</p>
+            <div class="screen-content-placeholder">
+                <p><strong>[증명서 발급 기능 구현 영역]</strong><br>- 서류 종류 선택<br>- 본인 인증<br>- 결제 (현금/카드/QR)<br>- 서류 + 영수증 출력</p>
+            </div>
+            <button class="back-to-home-button" data-target="homeScreen">홈으로</button>
+        </div>
+
+
+        <button id="aiChatbotInvokeButton" class="ai-chatbot-invoke-button" title="AI 챗봇과 대화하기">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.486 2 2 5.589 2 10c0 2.908 1.897 5.515 4.586 6.949L2 22l5.373-4.321C8.692 17.882 10.32 18 12 18c5.514 0 10-4.486 10-8S17.514 2 12 2zm0 14c-4.411 0-8-2.691-8-6s3.589-6 8-6 8 2.691 8 6-3.589 6-8 6z"/><circle cx="8" cy="10" r="1.5"/><circle cx="12" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/></svg>
+        </button>
+
+        <button id="emergencyHelpButtonFixed" class="emergency-button" title="긴급 도움 요청">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm0-8c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1s1 .45 1 1v1c0 .55-.45 1-1 1z"/></svg>
+            긴급<br>도움
+        </button>
+
+        <div class="accessibility-toolbar">
+            <button id="fontSizeIncreaseButton" class="access-button" title="글자 크게"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 4v3h5v12h3V7h5V4H9zm-6 8h3v7h3v-7h3V9H3v3z"/></svg> 크게 </button>
+            <button id="fontSizeDecreaseButton" class="access-button" title="글자 작게"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9h3v7h3v-7h3V6H3v3zm11.5 1.5c0 .8-.7 1.5-1.5 1.5h-2v2h-1.5v-2h-2c-.8 0-1.5-.7-1.5-1.5v-3c0-.8.7-1.5 1.5-1.5h5c.8 0 1.5.7 1.5 1.5v3zm-1.5-3h-2v3h2v-3z"/></svg> 작게 </button>
+            <button id="ttsButton" class="access-button" title="음성 안내 켜기/끄기"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg> 음성안내 </button>
+            <button id="languageButton" class="access-button" title="언어 변경 (영어)"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4.86 19l5.09-5.02.03.03c.74.75 1.5 1.41 2.26 1.99H1v2h8v-1.21c-.43-.02-1.63-1.03-2.07-1.49zM19 10h-2V8h2v2zm0 4h-2v-2h2v2zm0-8h-2V4h2v2zm2 0v2h-2V4h2zm-2 10h2v-2h-2v2zm0 4h2v-2h-2v2z"/></svg> ENG </button>
+            <button id="mapButton" class="access-button" title="주변 의료 시설 안내"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> 시설안내 </button>
+        </div>
     </div>
-    <script src="js/app.js"></script>
+
+    <div id="mapModal" class="modal"> <div class="modal-content"> <span class="close-button" id="closeMapModal">&times;</span> <h2>주변 의료 시설 안내</h2> <p>여기에 지도 이미지 또는 안내 텍스트가 표시됩니다.</p> <img src="https://placehold.co/600x400/e2e8f0/cbd5e0?text=지도+이미지+예시" alt="[주변 의료 시설 지도 이미지]" style="width:100%; max-width:550px; border-radius:10px;"> </div> </div>
+    <div id="emergencyHelpModal" class="modal"> <div class="modal-content"> <span class="close-button" id="closeEmergencyHelpModal">&times;</span> <h2>긴급 도움 요청</h2> <p>직원 호출 버튼 또는 비상 연락처 정보가 여기에 표시됩니다.</p> <button style="background-color: #dc3545; color:white; padding: 20px 40px; font-size:1.5rem; border:none; border-radius:10px; cursor:pointer;">직원 호출</button> <p style="margin-top:20px;">또는 <strong>119</strong>로 연락하세요.</p> </div> </div>
+
+    <div id="aiChatbotModal" class="ai-chatbot-modal">
+        <div class="ai-chatbot-modal-content">
+            <div class="ai-chatbot-modal-header">
+                <h2>AI 비서와 대화하기</h2>
+                <button id="aiChatbotCloseButton" class="ai-chatbot-close-button">&times;</button>
+            </div>
+            <div class="ai-chatbot-video-container">
+                <video id="aiChatbotWebcam" class="ai-chatbot-video" autoplay playsinline muted></video>
+                <canvas id="chatbotCaptureCanvas"></canvas> 
+            </div>
+            <div id="aiChatbotChatbox" class="ai-chatbot-chatbox">
+            </div>
+            <div id="aiChatbotStatus" class="ai-chatbot-status">마이크 버튼을 누르고 말씀해주세요.</div>
+            <div class="ai-chatbot-input-area">
+                <input type="text" id="aiChatbotUserInput" placeholder="여기에 질문을 입력하세요..." disabled>
+                <button id="aiChatbotMicButton" class="ai-chatbot-control-button" title="음성으로 질문하기">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                    질문하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFontSize = 1;
+        const baseFontSize = 16;
+        const kioskContainer = document.getElementById('kioskContainer');
+        const fontSizeIncreaseButton = document.getElementById('fontSizeIncreaseButton');
+        const fontSizeDecreaseButton = document.getElementById('fontSizeDecreaseButton');
+        const ttsButton = document.getElementById('ttsButton');
+        const languageButton = document.getElementById('languageButton');
+        const mapButton = document.getElementById('mapButton');
+        const emergencyHelpButtonFixed = document.getElementById('emergencyHelpButtonFixed');
+        
+        // Screen elements
+        const homeScreen = document.getElementById('homeScreen');
+        const receptionScreen = document.getElementById('receptionScreen');
+        const paymentScreen = document.getElementById('paymentScreen');
+        const certificateScreen = document.getElementById('certificateScreen');
+        const allScreens = [homeScreen, receptionScreen, paymentScreen, certificateScreen];
+
+        // Button elements for navigation
+        const receptionButton = document.getElementById('receptionButton');
+        const paymentButton = document.getElementById('paymentButton');
+        const certificateButton = document.getElementById('certificateButton');
+        
+        const mapModal = document.getElementById('mapModal');
+        const emergencyHelpModal = document.getElementById('emergencyHelpModal');
+        const closeMapModal = document.getElementById('closeMapModal');
+        const closeEmergencyHelpModal = document.getElementById('closeEmergencyHelpModal');
+        let ttsEnabled = true;
+        const synth = window.speechSynthesis;
+        let inactivityTimer;
+
+        function speak(text, forceSpeak = false) {
+            if ((ttsEnabled || forceSpeak) && synth && text) {
+                if (synth.speaking) { synth.cancel(); }
+                const utterance = new SpeechSynthesisUtterance(text);
+                const koreanVoice = synth.getVoices().find(voice => voice.lang.startsWith('ko'));
+                if (koreanVoice) { utterance.voice = koreanVoice; }
+                utterance.pitch = 1;
+                utterance.rate = 1;
+                synth.speak(utterance);
+            }
+        }
+
+        // --- Screen Navigation Logic ---
+        function showScreen(screenId) {
+            allScreens.forEach(screen => {
+                if (screen) { // Check if screen element exists
+                    if (screen.id === screenId) {
+                        screen.classList.remove('hidden-screen');
+                        // screen.classList.add('content-area'); // .content-area is already on the div, no need to re-add
+                    } else {
+                        screen.classList.add('hidden-screen');
+                        // screen.classList.remove('content-area'); // Don't remove, it's structural
+                    }
+                }
+            });
+            resetTimerFunc(); // Reset inactivity timer on screen change
+        }
+
+        if(receptionButton) receptionButton.addEventListener('click', () => { 
+            showScreen('receptionScreen'); 
+            speak("접수 화면입니다.");
+        });
+        if(paymentButton) paymentButton.addEventListener('click', () => { 
+            showScreen('paymentScreen');
+            speak("수납 화면입니다.");
+        });
+        if(certificateButton) certificateButton.addEventListener('click', () => { 
+            showScreen('certificateScreen');
+            speak("증명서 발급 화면입니다.");
+        });
+
+        document.querySelectorAll('.back-to-home-button').forEach(button => {
+            button.addEventListener('click', () => {
+                showScreen('homeScreen');
+                speak("홈 화면으로 돌아왔습니다.");
+            });
+        });
+        
+        // Initialize with home screen
+        showScreen('homeScreen');
+
+
+        function updateAllTextSizes() {
+            let scaleFactor;
+            switch(currentFontSize) {
+                case 0: scaleFactor = 0.8; break; 
+                case 1: scaleFactor = 1.0; break; 
+                case 2: scaleFactor = 1.3; break; 
+                case 3: scaleFactor = 1.6; break; 
+                default: scaleFactor = 1.0;
+            }
+            document.body.style.fontSize = `${16 * scaleFactor}px`; 
+            const mainButtons = document.querySelectorAll('.main-button');
+            const baseMainButtonSize = 2.8; 
+            if(mainButtons) mainButtons.forEach(btn => btn.style.fontSize = `${baseMainButtonSize * (0.8 + 0.2 * currentFontSize)}rem`);
+            const accessButtons = document.querySelectorAll('.access-button');
+            const baseAccessButtonSize = 1.5; 
+            if(accessButtons) accessButtons.forEach(btn => btn.style.fontSize = `${baseAccessButtonSize * (0.8 + 0.2 * currentFontSize)}rem`);
+            const header = document.querySelector('.header');
+            const baseHeaderSize = 2.5;
+            if(header) header.style.fontSize = `${baseHeaderSize * (0.8 + 0.2 * currentFontSize)}rem`;
+            const screenTitles = document.querySelectorAll('.screen-title');
+            const baseScreenTitleSize = 2.5; //rem
+            if(screenTitles) screenTitles.forEach(title => title.style.fontSize = `${baseScreenTitleSize * (0.8 + 0.2 * currentFontSize)}rem`);
+            const backButtons = document.querySelectorAll('.back-to-home-button');
+            const baseBackButtonSize = 1.8; //rem
+            if(backButtons) backButtons.forEach(btn => btn.style.fontSize = `${baseBackButtonSize * (0.8 + 0.2 * currentFontSize)}rem`);
+        }
+        updateAllTextSizes();
+
+        function speakCurrentFontSize() {
+            let sizeText = "";
+            switch(currentFontSize) {
+                case 0: sizeText = "글자 크기 작게"; break;
+                case 1: sizeText = "글자 크기 보통"; break;
+                case 2: sizeText = "글자 크기 크게"; break;
+                case 3: sizeText = "글자 크기 아주 크게"; break;
+            }
+            speak(sizeText);
+        }
+
+        if(fontSizeIncreaseButton) fontSizeIncreaseButton.addEventListener('click', () => {
+            if (currentFontSize < 3) { currentFontSize++; updateAllTextSizes(); speakCurrentFontSize(); }
+        });
+        if(fontSizeDecreaseButton) fontSizeDecreaseButton.addEventListener('click', () => {
+            if (currentFontSize > 0) { currentFontSize--; updateAllTextSizes(); speakCurrentFontSize(); }
+        });
+        if(ttsButton) ttsButton.addEventListener('click', () => {
+            ttsEnabled = !ttsEnabled;
+            const ttsStatusText = ttsEnabled ? '음성 안내 기능이 켜졌습니다.' : '음성 안내 기능이 꺼졌습니다.';
+            ttsButton.innerHTML = ttsEnabled ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg> 음성안내 끄기` : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.91 3.69-1.69L19.73 21 21 19.73l-9-9L4.27 3zM12 4L7 9H3V7.27L4.73 9H7l5-5V4z"/></svg> 음성안내 켜기`;
+            speak(ttsStatusText, true); 
+        });
+        
+        let currentLanguage = 'ko';
+        if(languageButton) languageButton.addEventListener('click', () => { alert('언어 변경 기능 구현 필요'); });
+        if(mapButton) mapButton.addEventListener('click', () => { mapModal.style.display = "block"; speak("주변 의료 시설 안내입니다. 화면을 확인해주세요."); });
+        if(closeMapModal) closeMapModal.addEventListener('click', () => { mapModal.style.display = "none"; });
+        if(emergencyHelpButtonFixed) emergencyHelpButtonFixed.addEventListener('click', () => { emergencyHelpModal.style.display = "block"; speak("긴급 도움 요청 화면입니다. 도움이 필요하시면 직원 호출 버튼을 눌러주세요."); });
+        if(closeEmergencyHelpModal) closeEmergencyHelpModal.addEventListener('click', () => { emergencyHelpModal.style.display = "none"; });
+        
+        window.onclick = function(event) {
+            if (event.target == mapModal) mapModal.style.display = "none";
+            if (event.target == emergencyHelpModal) emergencyHelpModal.style.display = "none";
+            if (event.target == aiChatbotModal) closeAiChatbot(); 
+        }
+
+        function resetTimerFunc() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if (isChatbotOpen) closeAiChatbot();
+                showScreen('homeScreen'); // 홈 화면으로 이동
+                speak('장시간 사용하지 않아 홈 화면으로 돌아갑니다.');
+                // window.location.reload(); // 전체 페이지 새로고침 대신 화면 전환으로 변경
+            }, 2 * 60 * 1000);
+        }
+        document.addEventListener('mousemove', resetTimerFunc);
+        document.addEventListener('keypress', resetTimerFunc);
+        document.addEventListener('click', resetTimerFunc);
+        document.addEventListener('touchstart', resetTimerFunc);
+        resetTimerFunc();
+        
+        window.onload = () => {
+            setTimeout(() => {
+                speak("안녕하세요. 배리어 프리 보건소 키오스크입니다. 원하시는 메뉴를 선택해주세요. 화면 하단의 버튼으로 글자 크기, 음성 안내 등을 조절할 수 있습니다. 우측 하단의 말풍선 아이콘을 눌러 AI 비서와 대화할 수 있습니다.");
+            }, 1000);
+            updateAllTextSizes();
+        };
+
+        const aiChatbotInvokeButton = document.getElementById('aiChatbotInvokeButton');
+        const aiChatbotModal = document.getElementById('aiChatbotModal');
+        const aiChatbotCloseButton = document.getElementById('aiChatbotCloseButton');
+        const aiChatbotWebcamElement = document.getElementById('aiChatbotWebcam');
+        const chatbotCaptureCanvas = document.getElementById('chatbotCaptureCanvas'); 
+        const aiChatbotChatbox = document.getElementById('aiChatbotChatbox');
+        const aiChatbotUserInput = document.getElementById('aiChatbotUserInput'); 
+        const aiChatbotMicButton = document.getElementById('aiChatbotMicButton');
+        const aiChatbotStatus = document.getElementById('aiChatbotStatus');
+
+        let chatbotStream; 
+        let speechRecognition;
+        let isChatbotOpen = false;
+
+        function initializeChatbotSpeechRecognition() {
+            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (window.SpeechRecognition) {
+                speechRecognition = new SpeechRecognition();
+                speechRecognition.continuous = false;
+                speechRecognition.interimResults = true; 
+                speechRecognition.lang = 'ko-KR';
+
+                speechRecognition.onstart = () => {
+                    aiChatbotStatus.textContent = '듣고 있습니다...';
+                    aiChatbotMicButton.classList.add('listening');
+                    aiChatbotMicButton.disabled = true;
+                };
+
+                speechRecognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    aiChatbotUserInput.value = finalTranscript || interimTranscript; 
+                };
+
+                speechRecognition.onerror = (event) => {
+                    console.error('Chatbot Speech recognition error:', event.error);
+                    let errMsg = "음성 인식 오류: " + event.error;
+                     if (event.error === 'no-speech') errMsg = '음성이 감지되지 않았습니다. 다시 시도해주세요.';
+                    if (event.error === 'audio-capture') errMsg = '마이크 접근에 문제가 발생했습니다.';
+                    if (event.error === 'not-allowed') errMsg = '마이크 사용 권한이 거부되었습니다.';
+                    aiChatbotStatus.textContent = errMsg;
+                    addMessageToChatbot(errMsg, 'bot');
+                };
+
+                speechRecognition.onend = () => {
+                    aiChatbotMicButton.classList.remove('listening');
+                    aiChatbotMicButton.disabled = false;
+                    aiChatbotStatus.textContent = '마이크 버튼을 누르고 말씀해주세요.';
+                    const question = aiChatbotUserInput.value.trim();
+                    if(question) { 
+                        askAiChatbot(question);
+                    }
+                };
+            } else {
+                console.warn('Speech Recognition not supported for chatbot.');
+                aiChatbotStatus.textContent = '음성 인식이 지원되지 않는 브라우저입니다.';
+                if(aiChatbotMicButton) aiChatbotMicButton.disabled = true;
+            }
+        }
+        
+        async function startChatbotWebcam() {
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true }); 
+                chatbotStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }); 
+                aiChatbotWebcamElement.srcObject = chatbotStream;
+                aiChatbotStatus.textContent = '마이크 버튼을 누르고 말씀해주세요.';
+            } catch (error) {
+                console.error('Error starting chatbot webcam/mic:', error);
+                aiChatbotStatus.textContent = '웹캠/마이크를 시작할 수 없습니다. 권한을 확인해주세요.';
+                addMessageToChatbot('웹캠/마이크를 시작할 수 없습니다. 권한을 확인해주세요.', 'bot');
+            }
+        }
+
+        function stopChatbotWebcam() {
+            if (chatbotStream) {
+                chatbotStream.getTracks().forEach(track => track.stop());
+                chatbotStream = null;
+                aiChatbotWebcamElement.srcObject = null;
+            }
+            if (speechRecognition && aiChatbotMicButton.classList.contains('listening')) { 
+                speechRecognition.stop();
+            }
+        }
+
+        function addMessageToChatbot(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('ai-chatbot-message', sender === 'user' ? 'ai-user-message' : 'ai-bot-message');
+            messageElement.textContent = text;
+            aiChatbotChatbox.appendChild(messageElement);
+            aiChatbotChatbox.scrollTop = aiChatbotChatbox.scrollHeight;
+            if (sender === 'bot') {
+                speak(text, true); 
+            }
+        }
+        
+        async function askAiChatbot(question) {
+            if (!question) return;
+            addMessageToChatbot(question, 'user');
+            aiChatbotUserInput.value = ''; 
+            aiChatbotStatus.textContent = 'AI가 답변을 생성 중입니다...';
+
+            let base64ImageData = null;
+            if (chatbotStream && chatbotStream.active && aiChatbotWebcamElement.readyState >= 2) { 
+                chatbotCaptureCanvas.width = aiChatbotWebcamElement.videoWidth;
+                chatbotCaptureCanvas.height = aiChatbotWebcamElement.videoHeight;
+                if (chatbotCaptureCanvas.width > 0 && chatbotCaptureCanvas.height > 0) {
+                    const context = chatbotCaptureCanvas.getContext('2d');
+                    context.drawImage(aiChatbotWebcamElement, 0, 0, chatbotCaptureCanvas.width, chatbotCaptureCanvas.height);
+                    try {
+                        base64ImageData = chatbotCaptureCanvas.toDataURL('image/jpeg', 0.8).split(',')[1]; 
+                    } catch (e) {
+                        console.error("Error capturing frame for chatbot:", e);
+                        addMessageToChatbot("화면 캡처 중 오류가 발생했습니다.", "bot");
+                    }
+                } else {
+                     console.warn("Webcam dimensions are not yet available for capture.");
+                }
+            }
+
+            const apiKey = ""; 
+            // Modified prompt to guide Gemini for general and specific questions
+            const C_promptForGemini = `You are a helpful AI assistant integrated into a health kiosk. 
+An image of the kiosk screen the user is currently viewing may be provided. The user's question is: "${question}".
+
+Instructions:
+1. If the question seems directly related to the provided image of the kiosk screen (e.g., asking about a button, text, or information on the screen), answer based on the image.
+2. If the question is a general knowledge question (e.g., "What is the capital of France?", "How does photosynthesis work?", "Tell me a joke"), answer it as a general AI assistant.
+3. If the question asks for real-time, unanswerable information (e.g., "What is the current weather?", "What are today's news headlines?"), or information beyond your capabilities (like performing actions outside the chat), politely state that you cannot provide that specific type of information and suggest where the user might find it if appropriate.
+4. If no image is provided, or if the image is not relevant to the question, focus on answering as a general AI assistant based on the text of the question.
+
+Please provide a comprehensive and helpful answer in Korean.`;
+            
+            console.log("Prompt to Gemini:", C_promptForGemini); // For debugging
+
+            const parts = [{ text: C_promptForGemini }];
+            if (base64ImageData) {
+                parts.push({
+                    inlineData: {
+                        mimeType: "image/jpeg",
+                        data: base64ImageData
+                    }
+                });
+            }
+
+            const payload = {
+                contents: [{ role: "user", parts: parts }],
+                // generationConfig: { // Optional: to specify output language if needed, but model should infer from prompt.
+                //    "response_mime_type": "text/plain"
+                // }
+            };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    console.error('Gemini API Error:', result);
+                    const errorMsg = result?.error?.message || `AI 응답 오류 (코드: ${response.status})`;
+                    addMessageToChatbot(errorMsg, 'bot');
+                } else if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                    const aiResponse = result.candidates[0].content.parts[0].text;
+                    addMessageToChatbot(aiResponse, 'bot');
+                } else if (result.promptFeedback && result.promptFeedback.blockReason) {
+                    addMessageToChatbot(`요청이 안전상의 이유로 차단되었습니다: ${result.promptFeedback.blockReason}`, 'bot');
+                }
+                else {
+                    console.warn("Unexpected API response structure from Gemini:", result);
+                    addMessageToChatbot('AI로부터 예상치 못한 응답을 받았습니다. 응답 형식을 확인해주세요.', 'bot');
+                }
+            } catch (error) {
+                console.error('Fetch error to Gemini:', error);
+                addMessageToChatbot(`AI 서비스 연결 중 오류 발생: ${error.message}`, 'bot');
+            } finally {
+                aiChatbotStatus.textContent = '마이크 버튼을 누르고 말씀해주세요.';
+                if(aiChatbotMicButton) aiChatbotMicButton.disabled = false; 
+            }
+        }
+
+        function openAiChatbot() {
+            aiChatbotModal.style.display = 'flex';
+            isChatbotOpen = true;
+            startChatbotWebcam();
+            initializeChatbotSpeechRecognition(); 
+            addMessageToChatbot("안녕하세요! 무엇을 도와드릴까요? 아래 마이크 버튼을 누르고 말씀해주세요.", "bot");
+            resetTimerFunc(); 
+        }
+
+        function closeAiChatbot() {
+            aiChatbotModal.style.display = 'none';
+            isChatbotOpen = false;
+            stopChatbotWebcam();
+            if(aiChatbotChatbox) aiChatbotChatbox.innerHTML = ''; 
+            if(aiChatbotUserInput) aiChatbotUserInput.value = '';
+            if(synth) synth.cancel(); 
+            resetTimerFunc(); 
+        }
+
+        if(aiChatbotInvokeButton) aiChatbotInvokeButton.addEventListener('click', openAiChatbot);
+        if(aiChatbotCloseButton) aiChatbotCloseButton.addEventListener('click', closeAiChatbot);
+        if(aiChatbotMicButton) aiChatbotMicButton.addEventListener('click', () => {
+            if (speechRecognition && !aiChatbotMicButton.classList.contains('listening')) {
+                if(aiChatbotUserInput) aiChatbotUserInput.value = '';
+                try {
+                    speechRecognition.start();
+                } catch (e) {
+                    console.error("Error starting speech recognition:", e);
+                    if(aiChatbotStatus) aiChatbotStatus.textContent = "음성 인식을 시작할 수 없습니다.";
+                     if (e.name === 'InvalidStateError') {
+                        if(aiChatbotStatus) aiChatbotStatus.textContent = "음성 인식이 이미 진행 중입니다. 잠시 후 다시 시도해주세요.";
+                    }
+                }
+            } else if (speechRecognition && aiChatbotMicButton.classList.contains('listening')) {
+                speechRecognition.stop(); 
+            }
+        });
+
+    </script>
 </body>
 </html>
