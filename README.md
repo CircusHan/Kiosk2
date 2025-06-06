@@ -18,16 +18,13 @@
    git clone <repository-url>
    cd Kiosk2
    ```
-2. 백엔드 서버를 실행합니다. 환경 변수 `GEMINI_API_KEY`에 API 키를 설정한 뒤 Flask 서버를 구동합니다.
+2. `index.html`을 브라우저에서 열어 실행합니다. 로컬 HTTP 서버를 이용하면 더 안정적으로 동작합니다.
    ```bash
-   export GEMINI_API_KEY="<YOUR-KEY>"
-   python server.py
-   ```
-3. 다른 터미널에서 프런트엔드를 호스팅합니다.
-   ```bash
+   # 예: Python 3 사용 시
    python -m http.server
    # 브라우저에서 http://localhost:8000 접속
    ```
+3. AI 챗봇을 사용하려면 `index.html`의 `const apiKey = "";` 부분에 본인의 Gemini API 키를 입력합니다.
 4. 브라우저에서 각 메뉴를 눌러 기능을 테스트하고, "AI 챗봇" 버튼을 눌러 질문을 해 보세요.
 
 ## 커스터마이징
