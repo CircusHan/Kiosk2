@@ -9,7 +9,7 @@
 * **settings.html** – API 키 입력 등 향후 확장을 위한 간단한 설정 화면 예제입니다.
 * **requirements.txt** – Flask 등 Python에서 필요한 패키지 목록입니다.
 
-H2(`Flask 백엔드란?')
+## Flask 백엔드란?
 Flask는 Python으로 웹 서버를 손쉽게 만들 수 있게 해 주는 도구입니다. `app.py` 를 실행하면 내 컴퓨터에서 작은 서버가 열리고, 이 서버가 AI 챗봇 요청을 처리합니다. 터미널에서 아래와 같이 실행하면 됩니다.
 ```
 python app.py
